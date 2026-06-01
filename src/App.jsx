@@ -4,7 +4,7 @@ const acceptedFormats = ".pdf,.doc,.docx";
 const generateApiPath =
   import.meta.env.VITE_SOP_GENERATE_API_PATH ||
   import.meta.env.VITE_SOP_API_PATH ||
-  "/api/v1/sops/generate";
+  "https://sop-app-byccdteeb0evhwhh.canadacentral-01.azurewebsites.net/api/v1/sops/generate";
 
 function extractFilename(response) {
   const header = response.headers.get("content-disposition");
