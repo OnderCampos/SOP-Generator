@@ -142,12 +142,10 @@ function App() {
         <div className="brand-lockup">
           <span className="brand-mark" />
           <div>
-            <p className="eyebrow">Asistente SOP</p>
-            <h1>InfoExtraction</h1>
+            <p className="eyebrow">Generador SOP</p>
           </div>
         </div>
 
-        <div className="profile-pill">Espacio SOP</div>
       </header>
 
       <main className="content-grid">
