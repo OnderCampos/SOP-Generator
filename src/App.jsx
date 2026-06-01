@@ -94,7 +94,7 @@ function App() {
     setStatus({
       tone: "loading",
       title: "Generando SOP",
-      message: "La API esta procesando la fuente, analizando el incidente y creando el archivo DOCX.",
+      message: "Esto puede tardar unos momentos.",
     });
 
     try {
@@ -227,15 +227,7 @@ function App() {
           role="dialog"
         >
           <div className="loading-modal">
-            <div className="loading-animation" aria-hidden="true">
-              <span className="loading-ring loading-ring-outer" />
-              <span className="loading-ring loading-ring-middle" />
-              <span className="loading-core">
-                <span className="loading-core-dot" />
-              </span>
-              <span className="loading-orbit loading-orbit-one" />
-              <span className="loading-orbit loading-orbit-two" />
-            </div>
+            <div className="loading-spinner" aria-hidden="true" />
 
             <div className="loading-copy">
               <p className="eyebrow">Procesando solicitud</p>
