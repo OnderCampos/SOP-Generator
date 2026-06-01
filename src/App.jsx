@@ -218,6 +218,33 @@ function App() {
           </form>
         </section>
       </main>
+
+      {isSubmitting ? (
+        <div
+          aria-labelledby="loading-modal-title"
+          aria-modal="true"
+          className="loading-modal-backdrop"
+          role="dialog"
+        >
+          <div className="loading-modal">
+            <div className="loading-animation" aria-hidden="true">
+              <span className="loading-ring loading-ring-outer" />
+              <span className="loading-ring loading-ring-middle" />
+              <span className="loading-core">
+                <span className="loading-core-dot" />
+              </span>
+              <span className="loading-orbit loading-orbit-one" />
+              <span className="loading-orbit loading-orbit-two" />
+            </div>
+
+            <div className="loading-copy">
+              <p className="eyebrow">Procesando solicitud</p>
+              <h3 id="loading-modal-title">{status.title}</h3>
+              <p>{status.message}</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

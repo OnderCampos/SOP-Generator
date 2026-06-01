@@ -349,6 +349,186 @@ button {
   box-shadow: none;
 }
 
+.loading-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(103, 194, 255, 0.12), transparent 28%),
+    radial-gradient(circle at bottom, rgba(143, 115, 255, 0.18), transparent 32%),
+    rgba(8, 8, 18, 0.7);
+  backdrop-filter: blur(20px);
+}
+
+.loading-modal {
+  width: min(100%, 420px);
+  padding: 30px 28px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, rgba(26, 21, 45, 0.96), rgba(16, 13, 31, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 28px 80px rgba(1, 4, 16, 0.56),
+    0 0 0 1px rgba(103, 194, 255, 0.06);
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+  text-align: center;
+}
+
+.loading-animation {
+  position: relative;
+  width: 172px;
+  height: 172px;
+  display: grid;
+  place-items: center;
+}
+
+.loading-ring,
+.loading-core,
+.loading-orbit {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.loading-ring {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.loading-ring-outer {
+  inset: 0;
+  background: radial-gradient(circle, rgba(103, 194, 255, 0.08), transparent 68%);
+  box-shadow: inset 0 0 24px rgba(103, 194, 255, 0.08);
+  animation: modalPulse 2.8s ease-in-out infinite;
+}
+
+.loading-ring-middle {
+  inset: 18px;
+  border-color: rgba(143, 115, 255, 0.18);
+  animation: modalPulse 2.8s ease-in-out infinite 220ms;
+}
+
+.loading-core {
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 30% 30%, #8fd6ff, #7567ff 78%);
+  box-shadow:
+    0 0 30px rgba(103, 194, 255, 0.38),
+    0 0 70px rgba(117, 103, 255, 0.24);
+  animation: modalCoreFloat 2.4s ease-in-out infinite;
+}
+
+.loading-core-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(245, 248, 255, 0.92);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.45);
+}
+
+.loading-orbit {
+  inset: 10px;
+  border: 1px solid transparent;
+}
+
+.loading-orbit::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: #93d9ff;
+  box-shadow: 0 0 16px rgba(147, 217, 255, 0.75);
+}
+
+.loading-orbit-one {
+  animation: modalSpin 2.1s linear infinite;
+}
+
+.loading-orbit-two {
+  inset: 30px;
+  animation: modalSpinReverse 3.1s linear infinite;
+}
+
+.loading-orbit-two::before {
+  top: auto;
+  bottom: -4px;
+  background: #b9a8ff;
+  box-shadow: 0 0 16px rgba(185, 168, 255, 0.75);
+}
+
+.loading-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.loading-copy .eyebrow {
+  margin-bottom: 0;
+}
+
+.loading-copy h3 {
+  margin: 0;
+  font-family: "Aptos Display", "Trebuchet MS", sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  letter-spacing: -0.04em;
+}
+
+.loading-copy p:last-child {
+  margin: 0;
+  color: #c8c0e9;
+}
+
+@keyframes modalSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes modalSpinReverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes modalPulse {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes modalCoreFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(0.98);
+  }
+
+  50% {
+    transform: translateY(-4px) scale(1.03);
+  }
+}
+
 @media (max-width: 900px) {
   .panel {
     padding: 24px;
@@ -391,5 +571,19 @@ button {
   .notes-block textarea {
     min-height: 96px;
     max-height: 120px;
+  }
+
+  .loading-modal-backdrop {
+    padding: 18px;
+  }
+
+  .loading-modal {
+    padding: 24px 20px;
+    border-radius: 26px;
+  }
+
+  .loading-animation {
+    width: 148px;
+    height: 148px;
   }
 }
