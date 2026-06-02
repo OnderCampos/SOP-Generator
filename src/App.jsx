@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const acceptedFormats = ".pdf,.doc,.docx";
 const generateApiPath =
   import.meta.env.VITE_SOP_GENERATE_API_PATH ||
   import.meta.env.VITE_SOP_API_PATH ||
   "https://sop-app-byccdteeb0evhwhh.canadacentral-01.azurewebsites.net/api/v1/sops/generate";
+const introModalStorageKey = "sop-generator-hide-intro-modal";
 
 function extractFilename(response) {
   const header = response.headers.get("content-disposition");
@@ -35,6 +36,8 @@ function App() {
   const [notes, setNotes] = useState("");
   const [dragActive, setDragActive] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showIntroModal, setShowIntroModal] = useState(false);
+  const [skipIntroOnThisBrowser, setSkipIntroOnThisBrowser] = useState(false);
   const [status, setStatus] = useState({
     tone: "idle",
     title: "Listo",
@@ -42,6 +45,17 @@ function App() {
   });
 
   const canSubmit = Boolean(selectedFile || notes.trim()) && !isSubmitting;
+
+  useEffect(() => {
+    try {
+      const storedPreference =
+        window.localStorage.getItem(introModalStorageKey) === "true";
+      setSkipIntroOnThisBrowser(storedPreference);
+      setShowIntroModal(!storedPreference);
+    } catch {
+      setShowIntroModal(true);
+    }
+  }, []);
 
   function updateFile(file) {
     if (!file) {
@@ -73,6 +87,20 @@ function App() {
 
   function openFilePicker() {
     inputRef.current?.click();
+  }
+
+  function closeIntroModal() {
+    try {
+      if (skipIntroOnThisBrowser) {
+        window.localStorage.setItem(introModalStorageKey, "true");
+      } else {
+        window.localStorage.removeItem(introModalStorageKey);
+      }
+    } catch {
+      // Ignore persistence errors and continue with the session.
+    }
+
+    setShowIntroModal(false);
   }
 
   async function handleSubmit(event) {
@@ -201,7 +229,7 @@ function App() {
                 id="notes"
                 name="notes"
                 onChange={(event) => setNotes(event.target.value)}
-                placeholder="Agrega detalles del incidente, restricciones, sistemas afectados o cualquier contexto que la API deba considerar."
+                placeholder="Agrega detalles del incidente, restricciones, sistemas afectados o cualquier contexto adicional."
                 rows="6"
                 value={notes}
               />
@@ -218,6 +246,66 @@ function App() {
           </form>
         </section>
       </main>
+
+      {showIntroModal ? (
+        <div
+          aria-labelledby="intro-modal-title"
+          aria-modal="true"
+          className="intro-modal-backdrop"
+          role="dialog"
+        >
+          <div className="intro-modal">
+            <div className="intro-modal-header">
+              <p className="eyebrow">Antes de comenzar</p>
+              <h3 id="intro-modal-title">Instrucciones y consideraciones</h3>
+            </div>
+
+            <div className="intro-modal-body">
+              <p>
+                Como consideracion principal, esta aplicacion genera un
+                documento SOP a partir solo del archivo fuente y de notas
+                adicionales.
+              </p>
+
+              <ul className="intro-modal-list">
+                <li>Adjunta un archivo en formato PDF, DOC o DOCX.</li>
+                <li>
+                  Si lo necesitas, agrega notas con contexto, restricciones o
+                  detalles del incidente.
+                </li>
+                <li>
+                  Mientras mas claro sea el contenido de entrada, mejor sera el
+                  resultado generado.
+                </li>
+                <li>
+                  Verifica que la informacion cargada no incluya datos sensibles
+                  que no deban procesarse.
+                </li>
+                <li>
+                  Al finalizar, la aplicacion descargara automaticamente el
+                  documento SOP en formato DOCX con un template establecido.
+                </li>
+              </ul>
+            </div>
+
+            <label className="intro-modal-preference" htmlFor="skip-intro-modal">
+              <input
+                checked={skipIntroOnThisBrowser}
+                id="skip-intro-modal"
+                onChange={(event) => setSkipIntroOnThisBrowser(event.target.checked)}
+                type="checkbox"
+              />
+              <span>No volver a mostrar en este navegador</span>
+            </label>
+
+            <div className="intro-modal-actions">
+              <button className="intro-modal-button" onClick={closeIntroModal} type="button">
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {isSubmitting ? (
         <div
