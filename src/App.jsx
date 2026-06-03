@@ -1,6 +1,6 @@
 import { LuCloudUpload } from "react-icons/lu";
 import { useEffect, useRef, useState } from "react";
-import { generateSopUrl } from "./config/api";
+import { analyzeSopUrl, documentSopUrl } from "./config/api";
 
 const acceptedFormats = ".pdf,.doc,.docx";
 const introModalStorageKey = "sop-generator-hide-intro-modal";
@@ -26,6 +26,18 @@ async function readErrorDetail(response) {
   }
 
   return errorDetail;
+}
+
+async function downloadGeneratedDocument(response) {
+  const blob = await response.blob();
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = extractFilename(response);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(downloadUrl);
 }
 
 function App() {
@@ -121,29 +133,41 @@ function App() {
     setIsSubmitting(true);
     setStatus({
       tone: "loading",
-      title: "Generando SOP",
-      message: "Esto puede tardar unos momentos.",
+      title: "Analizando incidente",
+      message: "Se esta procesando el contenido fuente para construir el analisis.",
     });
 
     try {
-      const generateResponse = await fetch(generateSopUrl, {
+      const analyzeResponse = await fetch(analyzeSopUrl, {
         method: "POST",
         body: formData,
       });
 
-      if (!generateResponse.ok) {
-        throw new Error(await readErrorDetail(generateResponse));
+      if (!analyzeResponse.ok) {
+        throw new Error(await readErrorDetail(analyzeResponse));
       }
 
-      const blob = await generateResponse.blob();
-      const downloadUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = extractFilename(generateResponse);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(downloadUrl);
+      const { analysis } = await analyzeResponse.json();
+
+      setStatus({
+        tone: "loading",
+        title: "Generando documento",
+        message: "El analisis ya termino. Ahora se esta redactando y armando el SOP.",
+      });
+
+      const documentResponse = await fetch(documentSopUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(analysis),
+      });
+
+      if (!documentResponse.ok) {
+        throw new Error(await readErrorDetail(documentResponse));
+      }
+
+      await downloadGeneratedDocument(documentResponse);
 
       setStatus({
         tone: "success",

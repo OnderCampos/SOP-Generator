@@ -18,6 +18,14 @@ function stripTrailingSlash(value) {
   return value.replace(/\/+$/, "");
 }
 
-export const generateSopUrl = stripTrailingSlash(
+const generateSopUrl = stripTrailingSlash(
   appEnv === "production" ? prodUrl : devUrl,
 );
+
+function replaceGeneratePath(url, nextPath) {
+  return url.replace(/\/generate$/, nextPath);
+}
+
+export const analyzeSopUrl = replaceGeneratePath(generateSopUrl, "/analyze");
+export const documentSopUrl = replaceGeneratePath(generateSopUrl, "/document");
+export { generateSopUrl };
