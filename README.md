@@ -4,7 +4,7 @@ Vite + React single-page frontend for the SOP Generator API.
 
 ## Run
 
-1. Start the standalone backend from [`../APIStandalone`](../APIStandalone).
+1. Start the standalone backend 
 2. Install dependencies:
 
 ```bash
@@ -28,8 +28,6 @@ Optional:
 - `VITE_SOP_GENERATE_API_PATH` defaults to `https://sop-app-byccdteeb0evhwhh.canadacentral-01.azurewebsites.net/api/v1/sops/generate`
 - `VITE_SOP_API_PATH` is also accepted as a compatibility alias for the same single endpoint
 
-## Request Timing
+## Deployment
+The deployment is performed automatically whenever a new commit is pushed to the `master` branch.
 
-The current frontend submit flow uses the browser `fetch` API without an explicit `AbortController` timeout, so the page waits until the request completes or the browser/network stack closes it.
-
-If users still see `504 Gateway Timeout`, the limit is coming from the backend host or an upstream proxy rather than from this React app.
