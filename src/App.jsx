@@ -1,10 +1,8 @@
+import { LuCloudUpload } from "react-icons/lu";
 import { useEffect, useRef, useState } from "react";
+import { generateSopUrl } from "./config/api";
 
 const acceptedFormats = ".pdf,.doc,.docx";
-const generateApiPath =
-  import.meta.env.VITE_SOP_GENERATE_API_PATH ||
-  import.meta.env.VITE_SOP_API_PATH ||
-  "https://sop-app-byccdteeb0evhwhh.canadacentral-01.azurewebsites.net/api/v1/sops/generate";
 const introModalStorageKey = "sop-generator-hide-intro-modal";
 
 function extractFilename(response) {
@@ -34,6 +32,7 @@ function App() {
   const inputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [notes, setNotes] = useState("");
+  const [isTranscript, setIsTranscript] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(false);
@@ -117,6 +116,7 @@ function App() {
     if (notes.trim()) {
       formData.append("description", notes.trim());
     }
+    formData.append("is_transcript", String(isTranscript));
 
     setIsSubmitting(true);
     setStatus({
@@ -126,7 +126,7 @@ function App() {
     });
 
     try {
-      const generateResponse = await fetch(generateApiPath, {
+      const generateResponse = await fetch(generateSopUrl, {
         method: "POST",
         body: formData,
       });
@@ -203,11 +203,7 @@ function App() {
               type="button"
             >
               <span className="upload-icon" aria-hidden="true">
-                <svg viewBox="0 0 64 64" role="presentation">
-                  <path d="M45 48h7a8 8 0 0 0 1-16 15 15 0 0 0-28.8-4.7A12 12 0 0 0 12 39a9 9 0 0 0 9 9h8" />
-                  <path d="M32 22v24" />
-                  <path d="m22 32 10-10 10 10" />
-                </svg>
+                <LuCloudUpload />
               </span>
               <span className="dropzone-title">
                 {selectedFile ? selectedFile.name : "Arrastra y suelta un archivo aqui"}
@@ -233,6 +229,20 @@ function App() {
                 rows="6"
                 value={notes}
               />
+            </label>
+
+            <label className="toggle-card" htmlFor="is-transcript">
+              <input
+                checked={isTranscript}
+                id="is-transcript"
+                name="is-transcript"
+                onChange={(event) => setIsTranscript(event.target.checked)}
+                type="checkbox"
+              />
+              <span>
+                El texto es una transcripcion. Si esta opcion esta marcada, las imagenes del
+                archivo no se consideraran.
+              </span>
             </label>
 
             <div className={`status-card status-${status.tone}`}>

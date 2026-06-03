@@ -280,10 +280,33 @@ button {
   color: #8c83ac;
 }
 
+.toggle-card,
 .status-card {
   border-radius: 22px;
   padding: 14px 16px;
   border: 1px solid transparent;
+}
+
+.toggle-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(115, 106, 155, 0.1);
+  border-color: rgba(155, 145, 196, 0.18);
+  color: #f0ebff;
+}
+
+.toggle-card input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex: 0 0 auto;
+  accent-color: #8ecfff;
+}
+
+.toggle-card span {
+  display: block;
+  line-height: 1.45;
 }
 
 .status-card strong {

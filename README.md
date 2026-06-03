@@ -17,16 +17,23 @@ npm install
 npm run dev
 ```
 
-The frontend defaults to the production API at `https://sop-app-byccdteeb0evhwhh.canadacentral-01.azurewebsites.net/api/v1/sops/generate`.
-
-The dev server can still proxy `/api` requests to `http://127.0.0.1:8000` if you override the API path back to a relative `/api/...` value.
+The frontend selects the backend URL from environment variables using a single `VITE_APP_ENV` toggle.
 
 ## Environment
 
-Optional:
+Base variables in `.env`:
 
-- `VITE_SOP_GENERATE_API_PATH` defaults to `https://sop-app-byccdteeb0evhwhh.canadacentral-01.azurewebsites.net/api/v1/sops/generate`
-- `VITE_SOP_API_PATH` is also accepted as a compatibility alias for the same single endpoint
+- `VITE_API_URL_DEV=/api`
+- `VITE_API_URL_PROD=https://sop-app-byccdteeb0evhwhh.canadacentral-01.azurewebsites.net/api/v1/sops/generate`
+
+Toggle files:
+
+- `.env.development` sets `VITE_APP_ENV=development`
+- `.env.production` sets `VITE_APP_ENV=production`
+
+The app uses the selected env URL directly as the generate endpoint.
+
+For local development, `VITE_API_URL_DEV=/api/v1/sops/generate` is intentional. The browser calls the Vite dev server on the same origin, and Vite proxies that traffic to `http://127.0.0.1:8000`, which avoids local CORS issues.
 
 ## Request Timing
 
