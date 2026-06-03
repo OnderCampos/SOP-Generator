@@ -33,6 +33,11 @@ jobs:
           app_build_command: "npm run build" # Explicit Vite build command
           output_location: "build" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
+        env:
+          VITE_APP_ENV: production
+          VITE_API_URL_DEV: /api/v1/sops/generate
+          VITE_API_URL_PROD: https://sop-app-byccdteeb0evhwhh.canadacentral-01.azurewebsites.net/api/v1/sops/generate
+        
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
