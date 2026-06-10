@@ -1,6 +1,6 @@
 import { LuCloudUpload } from "react-icons/lu";
 import { useEffect, useRef, useState } from "react";
-import { analyzeSopUrl, documentSopUrl } from "./config/api";
+import { parseSopUrl, analyzeChunkSopUrl, consolidateSopUrl, getConsolidateStatusUrl, documentSopUrl } from "./config/api";
 
 const acceptedFormats = ".pdf,.doc,.docx";
 const introModalStorageKey = "sop-generator-hide-intro-modal";
@@ -133,21 +133,106 @@ function App() {
     setIsSubmitting(true);
     setStatus({
       tone: "loading",
-      title: "Analizando incidente",
-      message: "Se esta procesando el contenido fuente para construir el analisis.",
+      title: "Extrayendo texto del documento",
+      message: "Se esta leyendo el documento fuente para dividirlo en partes.",
     });
 
     try {
-      const analyzeResponse = await fetch(analyzeSopUrl, {
+      const parseResponse = await fetch(parseSopUrl, {
         method: "POST",
         body: formData,
       });
 
-      if (!analyzeResponse.ok) {
-        throw new Error(await readErrorDetail(analyzeResponse));
+      if (!parseResponse.ok) {
+        throw new Error(await readErrorDetail(parseResponse));
       }
 
-      const { analysis } = await analyzeResponse.json();
+      const { parsed_input, chunks } = await parseResponse.json();
+
+      if (!chunks || chunks.length === 0) {
+        throw new Error("No se pudo extraer texto del documento.");
+      }
+
+      let previous_analysis = null;
+      const chunk_analyses = [];
+
+      for (let i = 0; i < chunks.length; i++) {
+        setStatus({
+          tone: "loading",
+          title: `Analizando parte ${i + 1} de ${chunks.length}`,
+          message: "Se esta procesando el contenido fuente por partes para no perder el contexto.",
+        });
+
+        const chunkResponse = await fetch(analyzeChunkSopUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            parsed_input: parsed_input,
+            chunk: chunks[i],
+            previous_analysis: previous_analysis,
+          }),
+        });
+
+        if (!chunkResponse.ok) {
+          throw new Error(await readErrorDetail(chunkResponse));
+        }
+
+        const { analysis } = await chunkResponse.json();
+        chunk_analyses.push(analysis);
+        previous_analysis = analysis;
+      }
+
+      setStatus({
+        tone: "loading",
+        title: "Consolidando analisis",
+        message: "Se estan uniendo los resultados de todas las partes para tener una vista global.",
+      });
+
+      const consolidateResponse = await fetch(consolidateSopUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          parsed_input: parsed_input,
+          chunks: chunks,
+          chunk_analyses: chunk_analyses,
+        }),
+      });
+
+      if (!consolidateResponse.ok) {
+        throw new Error(await readErrorDetail(consolidateResponse));
+      }
+
+      const { task_id } = await consolidateResponse.json();
+      
+      let finalAnalysis = null;
+      
+      // Polling loop
+      while (true) {
+        // Wait 5 seconds
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        const statusResponse = await fetch(getConsolidateStatusUrl(task_id));
+        if (!statusResponse.ok) {
+           throw new Error(await readErrorDetail(statusResponse));
+        }
+        
+        const taskData = await statusResponse.json();
+        
+        if (taskData.status === "error") {
+            throw new Error(taskData.detail || "Error en la consolidación en segundo plano.");
+        }
+        
+        if (taskData.status === "completed") {
+            finalAnalysis = taskData.result.analysis;
+            break;
+        }
+        
+        // If "processing", loop continues.
+      }
 
       setStatus({
         tone: "loading",
@@ -160,7 +245,7 @@ function App() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(analysis),
+        body: JSON.stringify(finalAnalysis),
       });
 
       if (!documentResponse.ok) {
