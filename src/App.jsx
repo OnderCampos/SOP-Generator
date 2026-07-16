@@ -1,6 +1,6 @@
 import { LuCloudUpload } from "react-icons/lu";
 import { useEffect, useRef, useState } from "react";
-import { parseSopUrl, analyzeChunkSopUrl, consolidateSopUrl, getConsolidateStatusUrl, documentSopUrl } from "./config/api";
+import { parseSopUrl, analyzeChunkSopUrl, documentSopUrl } from "./config/api";
 
 const acceptedFormats = ".pdf,.doc,.docx";
 const introModalStorageKey = "sop-generator-hide-intro-modal";
@@ -153,8 +153,8 @@ function App() {
         throw new Error("No se pudo extraer texto del documento.");
       }
 
-      let previous_analysis = null;
-      const chunk_analyses = [];
+      let currentState = null;
+      let finalAnalysis = null;
 
       for (let i = 0; i < chunks.length; i++) {
         setStatus({
@@ -171,7 +171,7 @@ function App() {
           body: JSON.stringify({
             parsed_input: parsed_input,
             chunk: chunks[i],
-            previous_analysis: previous_analysis,
+            current_state: currentState,
           }),
         });
 
@@ -179,59 +179,13 @@ function App() {
           throw new Error(await readErrorDetail(chunkResponse));
         }
 
-        const { analysis } = await chunkResponse.json();
-        chunk_analyses.push(analysis);
-        previous_analysis = analysis;
+        const { current_state } = await chunkResponse.json();
+        currentState = current_state;
+        finalAnalysis = current_state?.analysis || null;
       }
 
-      setStatus({
-        tone: "loading",
-        title: "Consolidando analisis",
-        message: "Se estan uniendo los resultados de todas las partes para tener una vista global.",
-      });
-
-      const consolidateResponse = await fetch(consolidateSopUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          parsed_input: parsed_input,
-          chunks: chunks,
-          chunk_analyses: chunk_analyses,
-        }),
-      });
-
-      if (!consolidateResponse.ok) {
-        throw new Error(await readErrorDetail(consolidateResponse));
-      }
-
-      const { task_id } = await consolidateResponse.json();
-      
-      let finalAnalysis = null;
-      
-      // Polling loop
-      while (true) {
-        // Wait 5 seconds
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        
-        const statusResponse = await fetch(getConsolidateStatusUrl(task_id));
-        if (!statusResponse.ok) {
-           throw new Error(await readErrorDetail(statusResponse));
-        }
-        
-        const taskData = await statusResponse.json();
-        
-        if (taskData.status === "error") {
-            throw new Error(taskData.detail || "Error en la consolidación en segundo plano.");
-        }
-        
-        if (taskData.status === "completed") {
-            finalAnalysis = taskData.result.analysis;
-            break;
-        }
-        
-        // If "processing", loop continues.
+      if (!finalAnalysis) {
+        throw new Error("No se pudo construir el analisis consolidado del documento.");
       }
 
       setStatus({
@@ -283,7 +237,6 @@ function App() {
             <p className="eyebrow">Generador SOP</p>
           </div>
         </div>
-
       </header>
 
       <main className="content-grid">

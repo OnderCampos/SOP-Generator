@@ -29,7 +29,6 @@ function replaceGeneratePath(url, nextPath) {
 export const parseSopUrl = replaceGeneratePath(generateSopUrl, "/parse");
 export const analyzeChunkSopUrl = replaceGeneratePath(generateSopUrl, "/analyze_chunk");
 export const consolidateSopUrl = replaceGeneratePath(generateSopUrl, "/consolidate");
-export const getConsolidateStatusUrl = (taskId) => `${consolidateSopUrl}/${taskId}`;
 export const analyzeSopUrl = replaceGeneratePath(generateSopUrl, "/analyze");
 export const documentSopUrl = replaceGeneratePath(generateSopUrl, "/document");
 export { generateSopUrl };
